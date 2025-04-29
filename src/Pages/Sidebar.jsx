@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, Outlet } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import {
   List,
   ListItem,
@@ -21,6 +21,7 @@ import {
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { styled } from "@mui/material/styles";
+import Swal from "sweetalert2";
 
 const drawerWidthOpen = 240;
 const drawerWidthClosed = 64;
@@ -73,14 +74,47 @@ const NavItem = ({ item, isOpen }) => (
 
 function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
- 
+  const [userRole, setUserRole] = useState(null); // Variable pour le rôle de l'utilisateur
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Charger le rôle de l'utilisateur depuis le localStorage ou autre méthode d'authentification
+    const role = localStorage.getItem("role_utilisateur"); // On suppose que le rôle est stocké dans le localStorage
+    setUserRole(role);
+  }, []);
 
   const navItems = [
     { title: "Tableau de bord", icon: <DashboardIcon fontSize="small" />, path: "/dashboard" },
     { title: "Clients", icon: <CustomersIcon fontSize="small" />, path: "/customers" },
-    { title: "Utilisateur", icon: <UserIcon fontSize="small" />, path: "/user" },
+    { title: "Utilisateur", icon: <UserIcon fontSize="small" />, path: "/user", role: "admin" }, // L'élément Utilisateur est destiné aux admins
     { title: "Entrée/Sortie", icon: <EntreeSortieIcon fontSize="small" />, path: "/entree_sortie" },
   ];
+
+  const handleLogout = () => {
+    // Afficher la confirmation de déconnexion avec SweetAlert2
+    Swal.fire({
+      title: "Êtes-vous sûr ?",
+      text: "Vous allez vous déconnecter de votre compte.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Oui, déconnecter",
+      cancelButtonText: "Annuler",
+      reverseButtons: true,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Suppression des éléments du localStorage
+        localStorage.removeItem("utilisateur_id");
+        localStorage.removeItem("role_utilisateur");
+        localStorage.removeItem("email_utilisateur");
+
+        // Redirection vers la page de connexion
+        navigate("/login");
+
+        // Afficher une alerte de confirmation
+        Swal.fire("Déconnecté!", "Vous avez été déconnecté.", "success");
+      }
+    });
+  };
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh" }}>
@@ -112,9 +146,12 @@ function Sidebar() {
 
         {/* Navigation */}
         <List sx={{ flex: 1, pt: 1 }}>
-          {navItems.map((item, index) => (
-            <NavItem key={index} item={item} isOpen={isOpen} />
-          ))}
+          {navItems.map(
+            (item, index) =>
+              (!item.role || item.role === userRole) && ( // Vérification du rôle avant d'afficher l'élément
+                <NavItem key={index} item={item} isOpen={isOpen} />
+              )
+          )}
         </List>
 
         {/* Footer */}
@@ -126,7 +163,7 @@ function Sidebar() {
           }}
         >
           <Tooltip title={!isOpen ? "Déconnexion" : ""} placement="right">
-            <StyledListItemButton onClick={() => console.log("Déconnecté")}>
+            <StyledListItemButton onClick={handleLogout}>
               <ListItemIcon
                 sx={{
                   color: "white",
@@ -155,9 +192,7 @@ function Sidebar() {
         }}
       >
         <AnimatePresence mode="wait">
-         
-            <Outlet />
-         
+          <Outlet />
         </AnimatePresence>
       </Box>
     </Box>

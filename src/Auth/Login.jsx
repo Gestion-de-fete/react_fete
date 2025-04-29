@@ -12,6 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import WarningIcon from "@mui/icons-material/Warning";
+import axios from "axios";
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -54,36 +55,45 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     const loginData = {
       email_utilisateur: email,
       mot_de_passe_utilisateur: password,
     };
-
+  
     try {
-      // Envoi des données de connexion au backend
-      const response = await fetch("http://localhost:5000/api/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(loginData),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        alert("Connexion réussie !");
-        // Redirection vers la page d'accueil ou tableau de bord après connexion réussie
-        navigate("/dashboard"); // Remplace "/dashboard" par la route de ton choix
-      } else {
-        alert(data.message || "Email ou mot de passe incorrect");
-      }
+      const response = await axios.post(
+        "http://localhost:5000/api/utilisateur/login",
+        loginData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true, // For Flask session management
+        }
+      );
+  
+      const data = response.data; // Axios automatically parses JSON
+  
+      // Store user data in localStorage
+      localStorage.setItem("utilisateur_id", data.id_utilisateur);
+      localStorage.setItem("role_utilisateur", data.role_utilisateur);
+      localStorage.setItem("email_utilisateur", email);
+  
+      alert("Connexion réussie !");
+      navigate("/sidebar"); // Redirect to dashboard
     } catch (error) {
       console.error("Erreur lors de la connexion:", error);
-      alert("Erreur de connexion au serveur.");
+      if (error.response) {
+        // Server responded with a status code (e.g., 401)
+        alert(error.response.data.message || "Email ou mot de passe incorrect");
+      } else {
+        // Network error or server unreachable
+        alert("Erreur de connexion au serveur.");
+      }
     }
   };
+  
 
   return (
     <Container maxWidth="xs">
