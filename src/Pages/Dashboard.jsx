@@ -22,7 +22,7 @@ function Dashboard() {
     setUserCount(data.users);      // Récupérer le nombre d'utilisateurs
     setEntryExitCount(data.entryExit); // Récupérer le nombre d'entrées/sorties
     setSortyExitCount(data.sortyExitCount);
-  }, []);
+  }, [data.clients, data.entryExit, data.sortyExitCount, data.users]);
 
   return (
     <div className="p-6">
