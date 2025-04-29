@@ -17,6 +17,7 @@ import {
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import WarningIcon from '@mui/icons-material/Warning';
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 function Register() {
   const [showPassword, setShowPassword] = useState(false);
@@ -71,8 +72,33 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Vérifications avant envoi
+    if (!username || !prenom || !email || !password || !confirmPassword || !role) {
+      Swal.fire({
+        icon: "warning",
+        title: "Champs requis",
+        text: "Veuillez remplir tous les champs",
+      });
+      return;
+    }
+
+    if (passwordError || confirmError) {
+      Swal.fire({
+        icon: "error",
+        title: "Erreur de mot de passe",
+        text: "Veuillez vérifier les mots de passe",
+      });
+      return;
+    }
+
     if (password !== confirmPassword) {
       setConfirmError("Les mots de passe ne correspondent pas");
+      Swal.fire({
+        icon: "error",
+        title: "Mot de passe",
+        text: "Les mots de passe ne correspondent pas",
+      });
       return;
     }
 
@@ -80,13 +106,13 @@ function Register() {
       nom_utilisateur: username,
       prenom_utilisateur: prenom,
       email_utilisateur: email,
-      mot_de_passe_utilisateur: password,
       role_utilisateur: role,
-      statut_utilisateur: "actif",
+      mot_de_passe_utilisateur: password,     
+      statut_utilisateur: "en attente",
     };
 
     try {
-      const response = await fetch("http://localhost:5000/api/register", {
+      const response = await fetch("http://localhost:5000/api/utilisateur/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -97,14 +123,25 @@ function Register() {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Inscription réussie !");
-        navigate("/login");
+        Swal.fire({
+          icon: "success",
+          title: "Succès",
+          text: "Inscription réussie !",
+        }).then(() => navigate("/login"));
       } else {
-        alert(data.message || "Erreur lors de l'inscription");
+        Swal.fire({
+          icon: "error",
+          title: "Erreur",
+          text: data.message || "Erreur lors de l'inscription",
+        });
       }
     } catch (error) {
       console.error("Erreur d'inscription:", error);
-      alert("Erreur de connexion au serveur.");
+      Swal.fire({
+        icon: "error",
+        title: "Erreur",
+        text: "Erreur de connexion au serveur.",
+      });
     }
   };
 
