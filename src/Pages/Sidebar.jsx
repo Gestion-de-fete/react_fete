@@ -74,24 +74,56 @@ const NavItem = ({ item, isOpen }) => (
 
 function Sidebar() {
   const [isOpen, setIsOpen] = useState(true);
-  const [userRole, setUserRole] = useState(null); // Variable pour le rôle de l'utilisateur
+  const [userRole, setUserRole] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Charger le rôle de l'utilisateur depuis le localStorage ou autre méthode d'authentification
-    const role = localStorage.getItem("role_utilisateur"); // On suppose que le rôle est stocké dans le localStorage
-    setUserRole(role);
-  }, []);
+    // Vérifier si l'utilisateur est authentifié en consultant le localStorage
+    const utilisateurId = localStorage.getItem("utilisateur_id");
+    const role = localStorage.getItem("role_utilisateur");
+
+    if (!utilisateurId || !role) {
+      // Si localStorage est vide ou incomplet, rediriger vers la page de connexion
+      Swal.fire({
+        title: "Session non valide",
+        text: "Vous devez vous connecter pour accéder au tableau de bord.",
+        icon: "error",
+        confirmButtonText: "Aller à la connexion",
+        allowOutsideClick: false,
+      }).then(() => {
+        navigate("/login");
+      });
+    } else {
+      // Définir le rôle si l'utilisateur est authentifié
+      setUserRole(role);
+    }
+  }, [navigate]);
 
   const navItems = [
-    { title: "Tableau de bord", icon: <DashboardIcon fontSize="small" />, path: "/dashboard" },
-    { title: "Clients", icon: <CustomersIcon fontSize="small" />, path: "/customers" },
-    { title: "Utilisateur", icon: <UserIcon fontSize="small" />, path: "/user", role: "admin" }, // L'élément Utilisateur est destiné aux admins
-    { title: "Entrée/Sortie", icon: <EntreeSortieIcon fontSize="small" />, path: "/entree_sortie" },
+    {
+      title: "Tableau de bord",
+      icon: <DashboardIcon fontSize="small" />,
+      path: "/dashboard",
+    },
+    {
+      title: "Clients",
+      icon: <CustomersIcon fontSize="small" />,
+      path: "/customers",
+    },
+    {
+      title: "Utilisateur",
+      icon: <UserIcon fontSize="small" />,
+      path: "/user",
+      role: "admin",
+    },
+    {
+      title: "Entrée/Sortie",
+      icon: <EntreeSortieIcon fontSize="small" />,
+      path: "/entree_sortie",
+    },
   ];
 
   const handleLogout = () => {
-    // Afficher la confirmation de déconnexion avec SweetAlert2
     Swal.fire({
       title: "Êtes-vous sûr ?",
       text: "Vous allez vous déconnecter de votre compte.",
@@ -102,16 +134,20 @@ function Sidebar() {
       reverseButtons: true,
     }).then((result) => {
       if (result.isConfirmed) {
-        // Suppression des éléments du localStorage
+        // Supprimer toutes les données du localStorage
         localStorage.removeItem("utilisateur_id");
         localStorage.removeItem("role_utilisateur");
         localStorage.removeItem("email_utilisateur");
 
-        // Redirection vers la page de connexion
+        // Rediriger vers la page de connexion
         navigate("/login");
 
         // Afficher une alerte de confirmation
-        Swal.fire("Déconnecté!", "Vous avez été déconnecté.", "success");
+        Swal.fire({title: "Déconnecté!", 
+          text: "Vous avez été déconnecté.", 
+         icon: "success",
+         showConfirmButton: false, // Affiche le bouton
+        timer: 2000,   });
       }
     });
   };
@@ -139,7 +175,10 @@ function Sidebar() {
               Dashboard
             </Typography>
           )}
-          <IconButton onClick={() => setIsOpen(!isOpen)} sx={{ color: "white" }}>
+          <IconButton
+            onClick={() => setIsOpen(!isOpen)}
+            sx={{ color: "white" }}
+          >
             <MenuIcon fontSize="small" />
           </IconButton>
         </Box>
@@ -148,7 +187,7 @@ function Sidebar() {
         <List sx={{ flex: 1, pt: 1 }}>
           {navItems.map(
             (item, index) =>
-              (!item.role || item.role === userRole) && ( // Vérification du rôle avant d'afficher l'élément
+              (!item.role || item.role === userRole) && (
                 <NavItem key={index} item={item} isOpen={isOpen} />
               )
           )}
@@ -187,7 +226,9 @@ function Sidebar() {
           flexGrow: 1,
           bgcolor: "#fff",
           transition: "margin-left 0.3s",
-          marginLeft: isOpen ? `${drawerWidthOpen}px` : `${drawerWidthClosed}px`,
+          marginLeft: isOpen
+            ? `${drawerWidthOpen}px`
+            : `${drawerWidthClosed}px`,
           p: 3,
         }}
       >

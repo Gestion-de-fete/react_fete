@@ -127,6 +127,8 @@ function Register() {
           icon: "success",
           title: "Succès",
           text: "Inscription réussie !",
+          showConfirmButton: false, // Affiche le bouton
+          timer: 2000,   
         }).then(() => navigate("/login"));
       } else {
         Swal.fire({

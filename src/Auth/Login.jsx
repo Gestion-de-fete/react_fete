@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import WarningIcon from "@mui/icons-material/Warning";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,7 +21,7 @@ function Login() {
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [capsLockActive, setCapsLockActive] = useState(false);
-  const navigate = useNavigate(); // Hook useNavigate pour la redirection
+  const navigate = useNavigate();
 
   const handleShowPassword = () => {
     setShowPassword(!showPassword);
@@ -55,12 +56,12 @@ function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
     const loginData = {
       email_utilisateur: email,
       mot_de_passe_utilisateur: password,
     };
-  
+
     try {
       const response = await axios.post(
         "http://localhost:5000/api/utilisateur/login",
@@ -72,28 +73,38 @@ function Login() {
           withCredentials: true, // For Flask session management
         }
       );
-  
-      const data = response.data; // Axios automatically parses JSON
-  
+
+      const data = response.data;
+
       // Store user data in localStorage
       localStorage.setItem("utilisateur_id", data.id_utilisateur);
       localStorage.setItem("role_utilisateur", data.role_utilisateur);
       localStorage.setItem("email_utilisateur", email);
-  
-      alert("Connexion réussie !");
-      navigate("/sidebar"); // Redirect to dashboard
+
+      // Show success message with SweetAlert2
+      await Swal.fire({
+        title: "Connexion réussie !",
+        text: "Vous êtes maintenant connecté.",
+        icon: "success",
+        showConfirmButton: false, // Affiche le bouton
+        timer: 2000,   
+      });
+
+      navigate("/dashboard"); // Redirect to dashboard
     } catch (error) {
       console.error("Erreur lors de la connexion:", error);
-      if (error.response) {
-        // Server responded with a status code (e.g., 401)
-        alert(error.response.data.message || "Email ou mot de passe incorrect");
-      } else {
-        // Network error or server unreachable
-        alert("Erreur de connexion au serveur.");
-      }
+      // Show error message with SweetAlert2
+      await Swal.fire({
+        title: "Erreur",
+        text:
+          error.response?.data?.message ||
+          "Email ou mot de passe incorrect. Veuillez réessayer.",
+        icon: "error",
+        showConfirmButton: false, // Affiche le bouton
+        timer: 2000,   
+      });
     }
   };
-  
 
   return (
     <Container maxWidth="xs">
@@ -186,7 +197,7 @@ function Login() {
             <Typography variant="body2" sx={{ mt: 2 }}>
               Pas encore inscrit ?{" "}
               <Button
-                onClick={() => navigate("/register")} // Redirection vers la page d'inscription
+                onClick={() => navigate("/register")}
                 sx={{ textDecoration: "underline", cursor: "pointer" }}
               >
                 Créer un compte
