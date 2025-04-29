@@ -24,8 +24,9 @@ function User() {
   const [openModify, setOpenModify] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null); // Ajout de selectedUser
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
   const [data, setData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+ 
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(4);
 

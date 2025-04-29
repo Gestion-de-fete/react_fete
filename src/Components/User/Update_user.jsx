@@ -80,13 +80,13 @@ function Update_user({ openModify, handleCloseModify, selectedUser, onSuccess })
     // Utiliser le statut tel quel (valeurs contrôlées par Select)
     const statut = formData.statut;
     console.log(`Submitting statut: '${statut}'`); // Debug: Log statut before submission
-
+    handleCloseModify();
     // Afficher une alerte de confirmation avec SweetAlert2
     const confirmationText =
-      statut === 'refusé'
+      statut === 'Refusé'
         ? 'Êtes-vous sûr de vouloir refuser cet utilisateur ? Cela supprimera l’utilisateur de la base de données.'
         : `Êtes-vous sûr de vouloir définir le statut à "${statut}" ?`;
-
+        handleCloseModify();
     const result = await Swal.fire({
       title: 'Confirmer l’action',
       text: confirmationText,
@@ -111,7 +111,7 @@ function Update_user({ openModify, handleCloseModify, selectedUser, onSuccess })
         payload
       );
       console.log('API response:', response.data); // Debug: Log API response
-
+      handleCloseModify();
       await Swal.fire({
         title: 'Succès',
         text:
@@ -123,10 +123,10 @@ function Update_user({ openModify, handleCloseModify, selectedUser, onSuccess })
       });
 
       onSuccess();
-      handleCloseModify();
     } catch (error) {
       console.error('Erreur lors de la mise à jour du statut :', error);
       console.log('Error response:', error.response?.data); // Debug: Log error details
+      handleCloseModify();
       await Swal.fire({
         title: 'Erreur',
         text: error.response?.data?.message || 'Erreur lors de la mise à jour du statut. Veuillez réessayer.',
@@ -202,9 +202,9 @@ function Update_user({ openModify, handleCloseModify, selectedUser, onSuccess })
               onChange={handleChange}
               label="Statut"
             >
-              <MenuItem value="en attente">En attente</MenuItem>
-              <MenuItem value="accepté">Accepté</MenuItem>
-              <MenuItem value="refusé">Refusé</MenuItem>
+              <MenuItem value="En attente">En attente</MenuItem>
+              <MenuItem value="Accepté">Accepté</MenuItem>
+              <MenuItem value="Refusé">Refusé</MenuItem>
             </Select>
             {errors.statut && <Typography color="error">{errors.statut}</Typography>}
           </FormControl>
