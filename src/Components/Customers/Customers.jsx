@@ -14,6 +14,7 @@ import {
   TablePagination,
   TextField,
 } from "@mui/material";
+import Swal from "sweetalert2";
 import { Edit, Delete } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import Add_customers from "./Add_customers";
@@ -24,23 +25,33 @@ function Customers() {
   const [filteredClients, setFilteredClients] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
-  const [rowsPerPage] = useState(4);
+  const [rowsPerPage, setRowsPerPage] = useState(4);
   const [openAdd, setOpenAdd] = useState(false);
   const [openModify, setOpenModify] = useState(false);
   const [selectedClient, setSelectedClient] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Fetch clients from the backend
   useEffect(() => {
     const fetchClients = async () => {
       setLoading(true);
+      setError(null);
       try {
-        const response = await fetch("/api/clients");
+        const response = await fetch("http://localhost:5000/api/client/fetch");
+        if (!response.ok) {
+          throw new Error("Failed to fetch clients");
+        }
         const data = await response.json();
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid data format");
+        }
+        console.log("Clients reçus:", data);
         setClients(data);
         setFilteredClients(data);
       } catch (error) {
-        console.error("Error fetching clients:", error);
+        console.error("Erreur lors de la récupération des clients:", error);
+        setError(error.message);
       }
       setLoading(false);
     };
@@ -49,61 +60,111 @@ function Customers() {
 
   // Handle search
   useEffect(() => {
-    const filtered = clients.filter(
-      (client) =>
-        client.nom_client.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        client.prenom_client.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        client.email_client.toLowerCase().includes(searchQuery.toLowerCase())
+    const filtered = clients.filter((client) =>
+      [
+        client.nom_client || "",
+        client.prenom_client || "",
+        client.email || "",
+        client.id_client || "",
+      ].some((field) => field.toLowerCase().includes(searchQuery.toLowerCase()))
     );
     setFilteredClients(filtered);
     setPage(0);
   }, [searchQuery, clients]);
 
-  // Pagination
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
 
-  // Dialog handlers
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  // Dialogs
   const handleOpenAdd = () => setOpenAdd(true);
   const handleCloseAdd = () => setOpenAdd(false);
 
   const handleOpenModify = (client) => {
-    setSelectedClient(client);
+    setSelectedClient(client); // ← ici on passe un objet simple
     setOpenModify(true);
   };
+
   const handleCloseModify = () => {
     setOpenModify(false);
     setSelectedClient(null);
   };
+  const handleDelete = async (id_client) => {
+    const result = await Swal.fire({
+      title: "Êtes-vous sûr ?",
+      text: "Cette action supprimera définitivement le client.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Oui, supprimer",
+      cancelButtonText: "Annuler",
+    });
 
-  // Handle delete
-  const handleDelete = async (cin_client) => {
-    try {
-      await fetch(`/api/clients/${cin_client}`, { method: "DELETE" });
-      setClients(clients.filter((client) => client.cin_client !== cin_client));
-      setFilteredClients(
-        filteredClients.filter((client) => client.cin_client !== cin_client)
-      );
-    } catch (error) {
-      console.error("Error deleting client:", error);
+    if (result.isConfirmed) {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/api/client/delete/${id_client}`,
+          {
+            method: "DELETE",
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Échec de la suppression");
+        }
+        const updatedClients = clients.filter((c) => c.id_client !== id_client);
+        setClients(updatedClients);
+        setFilteredClients(updatedClients);
+
+        Swal.fire("Supprimé !", "Le client a été supprimé.", "success");
+      } catch (error) {
+        console.error("Erreur lors de la suppression:", error);
+        setError(error.message);
+        Swal.fire("Erreur", error.message, "error");
+      }
     }
   };
 
-  // Handle success (after add or update)
-  const handleSuccess = (newClient) => {
-    setClients((prev) => {
-      const updatedClients = prev.filter(
-        (client) => client.cin_client !== newClient.cin_client
-      );
-      return [...updatedClients, newClient];
-    });
-    setFilteredClients((prev) => {
-      const updatedFiltered = prev.filter(
-        (client) => client.cin_client !== newClient.cin_client
-      );
-      return [...updatedFiltered, newClient];
-    });
+  // After add or update
+  const handleSuccess = async (newClient) => {
+    // Ajoutez ou modifiez le client dans le tableau local
+    const updatedClients = clients.map((client) =>
+      client.id_client === newClient.id_client ? newClient : client
+    );
+    setClients(updatedClients);
+    setFilteredClients(updatedClients);
+
+    // Appeler fetchClients pour récupérer les données mises à jour du serveur
+    const fetchClients = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch("http://localhost:5000/api/client/fetch");
+        if (!response.ok) {
+          throw new Error("Échec de la récupération des clients");
+        }
+        const data = await response.json();
+        if (!Array.isArray(data)) {
+          throw new Error("Format de données invalide");
+        }
+        setClients(data);
+        setFilteredClients(data);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des clients:", error);
+        setError(error.message);
+      }
+      setLoading(false);
+    };
+
+    // Récupérer les clients mis à jour
+    await fetchClients();
+
+    // Fermer les dialogues
     handleCloseAdd();
     handleCloseModify();
   };
@@ -115,14 +176,10 @@ function Customers() {
           Liste des clients
         </Typography>
       </Box>
+
       <Paper sx={{ p: 1, mb: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleOpenAdd}
-            sx={{ textTransform: "none" }}
-          >
+          <Button variant="contained" color="primary" onClick={handleOpenAdd}>
             <AddIcon /> Ajouter
           </Button>
           <TextField
@@ -136,80 +193,118 @@ function Customers() {
         </Box>
       </Paper>
 
-      {/* Add Client Dialog */}
+      {/* Dialogs */}
       <Add_customers
         open={openAdd}
         handleClose={handleCloseAdd}
         onSuccess={handleSuccess}
       />
-
-      {/* Update Client Dialog */}
       <Update_customers
         open={openModify}
         handleClose={handleCloseModify}
         selectedClient={selectedClient}
+        clientData={selectedClient}
         onSuccess={handleSuccess}
       />
 
+      {error && (
+        <Typography color="error" sx={{ mb: 2 }}>
+          Erreur: {error}
+        </Typography>
+      )}
+
       <TableContainer
         component={Paper}
-        className="shadow-lg mt-1"
-        sx={{ maxHeight: "700px", overflow: "auto" }}
+        sx={{ maxHeight: { xs: "500px", md: "700px" } }}
       >
         <Table stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell>CIN</TableCell>
-              <TableCell>Photo</TableCell>
-              <TableCell>Nom</TableCell>
-              <TableCell>Prénom</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Adresse</TableCell>
-              <TableCell>Téléphone</TableCell>
-              <TableCell>PAF</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>CIN</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Photo</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Nom</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Prénom</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Email</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Adresse</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Téléphone</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>PAF</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
               <TableRow>
                 <TableCell colSpan={9} align="center">
-                  <Typography>Loading...</Typography>
+                  <Typography>Chargement...</Typography>
+                </TableCell>
+              </TableRow>
+            ) : filteredClients.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={9} align="center">
+                  <Typography>Aucun client trouvé</Typography>
                 </TableCell>
               </TableRow>
             ) : (
               filteredClients
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((client) => (
-                  <TableRow key={client.cin_client}>
-                    <TableCell>{client.cin_client}</TableCell>
+                  <TableRow key={client.id_client}>
+                    <TableCell>{client.id_client || "N/A"}</TableCell>
                     <TableCell>
-                      {client.photo_client ? (
+                      {client.image ? (
                         <img
-                          src={`data:image/jpeg;base64,${client.photo_client}`}
+                          src={`data:image/jpeg;base64,${client.image}`}
                           alt="Client"
                           style={{
-                            width: "50px",
-                            height: "50px",
+                            width: "35px",
+                            height: "35px",
                             objectFit: "cover",
+                            borderRadius: "50%", // <-- rend l'image ronde
+                            border: "2px solid #ccc", // optionnel : bordure légère
                           }}
+                          onError={(e) =>
+                            (e.target.src = "/fallback-image.png")
+                          }
                         />
                       ) : (
-                        "No Image"
+                        "Aucune image"
                       )}
                     </TableCell>
-                    <TableCell>{client.nom_client}</TableCell>
-                    <TableCell>{client.prenom_client}</TableCell>
-                    <TableCell>{client.email_client}</TableCell>
-                    <TableCell>{client.adresse_client}</TableCell>
-                    <TableCell>{client.telephone_client}</TableCell>
-                    <TableCell>{client.paf_client}</TableCell>
-                    <TableCell>
-                      <Button onClick={() => handleOpenModify(client)}>
-                        <Edit />
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>
+                      {client.nom || "N/A"}
+                    </TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>
+                      {client.prenom || "N/A"}
+                    </TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>
+                      {client.email || "N/A"}
+                    </TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>
+                      {client.adresse || "N/A"}
+                    </TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>
+                      {client.telephone || "N/A"}
+                    </TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>
+                      {client.paf || "N/A"}
+                    </TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        onClick={() => handleOpenModify(client)}
+                        sx={{ mr: 1 }}
+                      >
+                        <Edit fontSize="small" />
                       </Button>
-                      <Button onClick={() => handleDelete(client.cin_client)}>
-                        <Delete />
+                      <Button
+                        variant="contained"
+                        color="error"
+                        size="small"
+                        onClick={() => handleDelete(client.id_client)}
+                      >
+                        <Delete fontSize="small" />
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -226,6 +321,7 @@ function Customers() {
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
       />
     </Container>
   );
