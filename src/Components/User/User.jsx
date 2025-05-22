@@ -90,15 +90,14 @@ function User() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          height: "15vh",
-          marginBottom: 4,
+          height: "15vh"
         }}
       >
-        <Typography variant="h3" component="h4" maxWidth="sm">
+        <Typography variant="h3" component="h4" maxWidth="sm" sx={{ mb: 4}}>
           Liste des utilisateurs
         </Typography>
       </Box>
-      <Paper sx={{ p: 2, mb: 3 }}>
+      <Paper sx={{ p: 2, mb:  0 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <TextField
             label="Rechercher un utilisateur"
@@ -126,7 +125,7 @@ function User() {
         </Box>
       )}
 
-      <Box sx={{ display: "flex", justifyContent: "center", marginTop: "20px" }}>
+      <Box sx={{ display: "flex", justifyContent: "center", marginTop: "20px", marginBottom: "20px" }}>
         <TableContainer elevation={2} component={Paper}>
           <Table>
             <TableHead>
