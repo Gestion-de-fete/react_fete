@@ -6,6 +6,7 @@ import Customers from "./Components/Customers/Customers";
 import User from "./Components/User/User";
 import Entree_Sortie from "./Components/Entree_Sortie/Entree_Sortie";
 import Sidebar from "./Pages/Sidebar";
+import List_client from "./Components/2_date/list_client";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/customers" element={<Customers />} />
           <Route path="/user" element={<User />} />
           <Route path="/entree_sortie" element={<Entree_Sortie />} />
+          <Route path="/list_client" element={<List_client />} />
         </Route>
       </Routes>
     </Router>

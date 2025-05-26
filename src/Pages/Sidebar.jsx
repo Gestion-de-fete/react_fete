@@ -121,6 +121,12 @@ function Sidebar() {
       icon: <EntreeSortieIcon fontSize="small" />,
       path: "/entree_sortie",
     },
+     {
+      title: "Liste des clients entre 2 date",
+      icon: <EntreeSortieIcon fontSize="small" />,
+      path: "/list_client",
+      role: "admin",
+    },
   ];
 
   const handleLogout = () => {

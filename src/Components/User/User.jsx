@@ -130,13 +130,13 @@ function User() {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Numéro</TableCell>
-                <TableCell>Nom</TableCell>
-                <TableCell>Prénom</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Rôle</TableCell>
-                <TableCell>Statut</TableCell>
-                <TableCell>Action</TableCell>
+                <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Numéro</TableCell>
+                <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Nom</TableCell>
+                <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Prénom</TableCell>
+                <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Email</TableCell>
+                <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Rôle</TableCell>
+                <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Statut</TableCell>
+                <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

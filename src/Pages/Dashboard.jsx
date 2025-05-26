@@ -1,230 +1,82 @@
-import React, { useState, useEffect } from 'react';
+import React from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap-icons/font/bootstrap-icons.css";
 import {
-  Card,
-  CardContent,
-  Typography,
-  Grid,
-  CircularProgress,
-  Container,
-} from '@mui/material';
-import {
-  People as PeopleIcon,
-  Person as PersonIcon,
-  ImportExport as ImportExportIcon,
-} from '@mui/icons-material';
-import { Bar } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
   Tooltip,
-  Legend,
-} from 'chart.js';
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+  ResponsiveContainer,
+} from "recharts";
 
 function Dashboard() {
-  const [clientCount, setClientCount] = useState(0);
-  const [userCount, setUserCount] = useState(0);
-  const [entryExitCount, setEntryExitCount] = useState(0);
-  const [sortyExitCount, setSortyExitCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // Simulations des données, remplace par tes données réelles ou via API
+  const nombreClients = 34;
+  const nombreUtilisateurs = 10;
+  const nombreEntreesSorties = 57;
 
-  const data = {
-    clients: 150,
-    users: 75,
-    entryExit: 200,
-    sortyExitCount: 12,
-  };
-
-  useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      try {
-        setClientCount(data.clients);
-        setUserCount(data.users);
-        setEntryExitCount(data.entryExit);
-        setSortyExitCount(data.sortyExitCount);
-        setLoading(false);
-      } catch {
-        setError('Failed to load dashboard data');
-        setLoading(false);
-      }
-    }, 1000);
-  }, []);
-
-  const colors = {
-    primary: '#1E3A8A',
-    secondary: '#3B82F6',
-    accent1: '#10B981',
-    accent2: '#8B5CF6',
-    background: '#F9FAFB',
-    cardBackground: '#FFFFFF',
-    textPrimary: '#1F2937',
-    textSecondary: '#6B7280',
-  };
-
-  const chartData = {
-    labels: ['Clients', 'Users', 'Entries', 'Exits'],
-    datasets: [
-      {
-        label: 'Metrics',
-        data: [clientCount, userCount, entryExitCount, sortyExitCount],
-        backgroundColor: [colors.accent1, colors.secondary, colors.primary, colors.accent2],
-        borderColor: [colors.accent1, colors.secondary, colors.primary, colors.accent2],
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  const chartOptions = {
-    indexAxis: 'y',
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { position: 'top', labels: { color: colors.textPrimary } },
-      title: {
-        display: true,
-        text: 'Metrics Overview',
-        color: colors.textPrimary,
-        font: { size: 16, weight: 'bold' },
-      },
-    },
-    scales: {
-      x: {
-        beginAtZero: true,
-        ticks: { color: colors.textPrimary },
-        grid: { color: 'rgba(0,0,0,0.05)' },
-      },
-      y: {
-        ticks: { color: colors.textPrimary },
-        grid: { display: false },
-      },
-    },
-  };
-
-  const cardStyle = {
-    backgroundColor: colors.cardBackground,
-    borderRadius: '12px',
-    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.05)',
-    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-    '&:hover': {
-      transform: 'translateY(-4px)',
-      boxShadow: '0 6px 15px rgba(0, 0, 0, 0.15)',
-    },
-  };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-gray-100">
-        <CircularProgress sx={{ color: colors.primary }} />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex justify-center items-center h-screen bg-gray-100 text-red-600">
-        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-          {error}
-        </Typography>
-      </div>
-    );
-  }
+  // Exemple de données pour l'histogramme (par exemple nombre d'entrées sur une semaine)
+  const dataHistogramme = [
+    { jour: "Lun", entrees: 8 },
+    { jour: "Mar", entrees: 12 },
+    { jour: "Mer", entrees: 15 },
+    { jour: "Jeu", entrees: 10 },
+    { jour: "Ven", entrees: 20 },
+    { jour: "Sam", entrees: 5 },
+    { jour: "Dim", entrees: 9 },
+  ];
 
   return (
-    <div style={{ backgroundColor: colors.background, minHeight: '100vh' }}>
-      {/* Header */}
-      <header
-        style={{
-          background: `linear-gradient(to right, ${colors.primary}, ${colors.secondary})`,
-          padding: '1rem 0',
-          marginBottom: '1rem',
-        }}
-      >
-        <Typography variant="h4" align="center" sx={{ fontWeight: 'bold', color: '#fff' }}>
-          Enterprise Dashboard
-        </Typography>
-      </header>
+    <div className="mb-3">
+      <div className="container-fluid p-3 bg-light mb-4 rounded">
+        <div className="row g-3">
+          <div className="col-12 col-sm-6 col-md-4">
+            <div className="d-flex justify-content-between align-items-center p-4 bg-white border border-secondary shadow-sm rounded">
+              <i className="bi bi-people-fill fs-1 text-primary"></i>
+              <div className="text-end">
+                <span className="text-muted fw-semibold">Clients</span>
+                <h2 className="mb-0">{nombreClients}</h2>
+              </div>
+            </div>
+          </div>
 
-      <Container maxWidth="lg">
-        {/* Cards */}
-        <Grid container spacing={3} mb={4}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={cardStyle}>
-              <CardContent className="flex flex-col items-center">
-                <PeopleIcon sx={{ fontSize: 40, color: colors.accent1, mb: 1 }} />
-                <Typography variant="subtitle1" sx={{ color: colors.textSecondary }}>
-                  Clients
-                </Typography>
-                <Typography variant="h5" sx={{ color: colors.textPrimary, fontWeight: 'bold' }}>
-                  {clientCount}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+          <div className="col-12 col-sm-6 col-md-4">
+            <div className="d-flex justify-content-between align-items-center p-4 bg-white border border-secondary shadow-sm rounded">
+              <i className="bi bi-person-badge-fill fs-1 text-success"></i>
+              <div className="text-end">
+                <span className="text-muted fw-semibold">Utilisateurs</span>
+                <h2 className="mb-0">{nombreUtilisateurs}</h2>
+              </div>
+            </div>
+          </div>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={cardStyle}>
-              <CardContent className="flex flex-col items-center">
-                <PersonIcon sx={{ fontSize: 40, color: colors.secondary, mb: 1 }} />
-                <Typography variant="subtitle1" sx={{ color: colors.textSecondary }}>
-                  Users
-                </Typography>
-                <Typography variant="h5" sx={{ color: colors.textPrimary, fontWeight: 'bold' }}>
-                  {userCount}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+          <div className="col-12 col-sm-6 col-md-4">
+            <div className="d-flex justify-content-between align-items-center p-4 bg-white border border-secondary shadow-sm rounded">
+              <i className="bi bi-box-arrow-in-right fs-1 text-warning"></i>
+              <div className="text-end">
+                <span className="text-muted fw-semibold">Entrées / Sorties</span>
+                <h2 className="mb-0">{nombreEntreesSorties}</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={cardStyle}>
-              <CardContent className="flex flex-col items-center">
-                <ImportExportIcon sx={{ fontSize: 40, color: colors.primary, mb: 1 }} />
-                <Typography variant="subtitle1" sx={{ color: colors.textSecondary }}>
-                  Entries
-                </Typography>
-                <Typography variant="h5" sx={{ color: colors.textPrimary, fontWeight: 'bold' }}>
-                  {entryExitCount}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Card sx={cardStyle}>
-              <CardContent className="flex flex-col items-center">
-                <ImportExportIcon sx={{ fontSize: 40, color: colors.accent2, mb: 1 }} />
-                <Typography variant="subtitle1" sx={{ color: colors.textSecondary }}>
-                  Exits
-                </Typography>
-                <Typography variant="h5" sx={{ color: colors.textPrimary, fontWeight: 'bold' }}>
-                  {sortyExitCount}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-
-        {/* Chart */}
-        <Card
-          sx={{
-            height: 400,
-            borderRadius: '12px',
-            boxShadow: '0 4px 10px rgba(0, 0, 0, 0.05)',
-            backgroundColor: colors.cardBackground,
-          }}
-        >
-          <CardContent sx={{ height: '100%' }}>
-            <Bar data={chartData} options={chartOptions} />
-          </CardContent>
-        </Card>
-      </Container>
-    </div>
+          <div style={{ width: "100%", height: 300 }}>
+            <ResponsiveContainer>
+              <BarChart data={dataHistogramme} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="jour" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="entrees" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+  
   );
 }
 

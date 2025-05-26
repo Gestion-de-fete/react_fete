@@ -14,6 +14,7 @@ import {
   TablePagination,
   TextField,
 } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 import Swal from "sweetalert2";
 import { Edit, Delete } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
@@ -189,6 +190,9 @@ function Customers() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             sx={{ width: "300px" }}
+            InputProps={{
+              startAdornment: <SearchIcon />,
+            }}
           />
         </Box>
       </Paper>
@@ -220,15 +224,33 @@ function Customers() {
         <Table stickyHeader>
           <TableHead>
             <TableRow>
-              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>CIN</TableCell>
-              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Photo</TableCell>
-              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Nom</TableCell>
-              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Prénom</TableCell>
-              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Email</TableCell>
-              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Adresse</TableCell>
-              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Téléphone</TableCell>
-              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>PAF</TableCell>
-              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
+                CIN
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
+                Photo
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
+                Nom
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
+                Prénom
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
+                Email
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
+                Adresse
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
+                Téléphone
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
+                PAF
+              </TableCell>
+              <TableCell sx={{ fontWeight: "bold", whiteSpace: "nowrap" }}>
+                Actions
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -249,7 +271,9 @@ function Customers() {
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                 .map((client) => (
                   <TableRow key={client.id_client}>
-                    <TableCell>{client.id_client || "N/A"}</TableCell>
+                    <TableCell sx={{ whiteSpace: "nowrap" }}>
+                      {client.id_client || "N/A"}
+                    </TableCell>
                     <TableCell>
                       {client.image ? (
                         <img
@@ -286,7 +310,7 @@ function Customers() {
                       {client.telephone || "N/A"}
                     </TableCell>
                     <TableCell sx={{ whiteSpace: "nowrap" }}>
-                      {client.paf || "N/A"}
+                      {client.paf || "N/A"} Ar
                     </TableCell>
                     <TableCell sx={{ whiteSpace: "nowrap" }}>
                       <Button
