@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import {
@@ -10,23 +10,40 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import axios from "axios";
 
 function Dashboard() {
-  // Simulations des données, remplace par tes données réelles ou via API
-  const nombreClients = 34;
-  const nombreUtilisateurs = 10;
-  const nombreEntreesSorties = 57;
+  const [nombreClients, setNombreClients] = useState(0);
+  const [nombreUtilisateurs, setNombreUtilisateurs] = useState(0);
+  const [nombreEntreesSorties, setNombreEntreesSorties] = useState(0);
+  const [dataHistogramme, setDataHistogramme] = useState([]);
 
-  // Exemple de données pour l'histogramme (par exemple nombre d'entrées sur une semaine)
-  const dataHistogramme = [
-    { jour: "Lun", entrees: 8 },
-    { jour: "Mar", entrees: 12 },
-    { jour: "Mer", entrees: 15 },
-    { jour: "Jeu", entrees: 10 },
-    { jour: "Ven", entrees: 20 },
-    { jour: "Sam", entrees: 5 },
-    { jour: "Dim", entrees: 9 },
-  ];
+ useEffect(() => {
+  axios
+    .get("http://localhost:5000/api/entree_sortie/number")
+    .then((res) => {
+      setNombreClients(res.data.nombre_clients);
+      setNombreUtilisateurs(res.data.nombre_utilisateurs);
+      setNombreEntreesSorties(res.data.nombre_entrees_sorties);
+
+      const joursFixes = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+
+      // Créer un objet avec les jours fixes et valeurs à 0
+      const histogrammeComplet = joursFixes.map((jour) => {
+        const jourTrouve = res.data.histogramme.find((item) => item.jour === jour);
+        return {
+          jour: jour,
+          entrees: jourTrouve ? jourTrouve.entrees : 0,
+        };
+      });
+
+      setDataHistogramme(histogrammeComplet);
+    })
+    .catch((err) => {
+      console.error("Erreur lors du chargement des données du dashboard :", err);
+    });
+}, []);
+
 
   return (
     <div className="mb-3">
@@ -64,19 +81,18 @@ function Dashboard() {
         </div>
       </div>
 
-          <div style={{ width: "100%", height: 300 }}>
-            <ResponsiveContainer>
-              <BarChart data={dataHistogramme} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="jour" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="entrees" fill="#8884d8" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-  
+      <div style={{ width: "100%", height: 300 }}>
+        <ResponsiveContainer>
+          <BarChart data={dataHistogramme} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="jour" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="entrees" fill="#8884d8" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
   );
 }
 

@@ -19,6 +19,8 @@ import {
   Menu as MenuIcon,
   Logout as LogoutIcon,
 } from "@mui/icons-material";
+import { EventNote as DateListIcon } from "@mui/icons-material";
+
 import { motion, AnimatePresence } from "framer-motion";
 import { styled } from "@mui/material/styles";
 import Swal from "sweetalert2";
@@ -123,7 +125,7 @@ function Sidebar() {
     },
      {
       title: "Liste des clients entre 2 date",
-      icon: <EntreeSortieIcon fontSize="small" />,
+       icon: <DateListIcon fontSize="small" />,
       path: "/list_client",
       role: "admin",
     },
