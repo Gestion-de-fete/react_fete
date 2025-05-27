@@ -73,9 +73,8 @@ function Entree_Sortie() {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete("http://localhost:5000/api/entree_sortie/delete", {
-          data: { ids: [id] },
-        });
+        await axios.delete(`http://localhost:5000/api/entree_sortie/delete/${id}`);
+
 
         Swal.fire("Supprimé !", "L'entrée a été supprimée.", "success");
         fetchData();
